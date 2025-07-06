@@ -27,26 +27,26 @@ app.whenReady().then(() => {
 
     ipcMain.on("fetchNew",(e, fileName)=>{
         console.log("fetch new file!")
-        fs.writeFileSync(`saves/${fileName}.sav`,"helo")
-        fs.copyFileSync(process.env.HOME+"/Library/Application Support/FasterThanLight/continue.sav",`saves/${fileName}.sav`)
+        fs.writeFileSync(`savefiles/${fileName}.sav`,"helo")
+        fs.copyFileSync(process.env.HOME+"/Library/Application Support/FasterThanLight/continue.sav",`savefiles/${fileName}.sav`)
         
         let savelist = []
-        fs.readdirSync("./saves").forEach((file) =>{
+        fs.readdirSync("./savefiles").forEach((file) =>{
             savelist.push(file.substring(0,file.indexOf(".")))
         })
         BrowserWindow.fromWebContents(e.sender).webContents.send("savelist", JSON.stringify(savelist))
     })
 
     ipcMain.on("reload", (e, fileName) =>{
-        fs.copyFileSync(process.env.HOME+"/Library/Application Support/FasterThanLight/continue.sav",`saves/${fileName}.sav`)
+        fs.copyFileSync(process.env.HOME+"/Library/Application Support/FasterThanLight/continue.sav",`savefiles/${fileName}.sav`)
         BrowserWindow.fromWebContents(e.sender).webContents.send("message", `reloaded ${fileName}!`)
 
     })
     
     ipcMain.on("remove", (e, fileName) =>{
-        fs.rmSync(`saves/${fileName}.sav`)
+        fs.rmSync(`savefiles/${fileName}.sav`)
         let savelist = []
-        fs.readdirSync("./saves").forEach((file) =>{
+        fs.readdirSync("./savefiles").forEach((file) =>{
             savelist.push(file.substring(0,file.indexOf(".")))
         })
         BrowserWindow.fromWebContents(e.sender).webContents.send("savelist", JSON.stringify(savelist))
@@ -54,7 +54,7 @@ app.whenReady().then(() => {
 
     ipcMain.on("getSaves", (event)=>{
         let savelist = []
-        fs.readdirSync("./saves").forEach((file) =>{
+        fs.readdirSync("./savefiles").forEach((file) =>{
             savelist.push(file.substring(0,file.indexOf(".")))
         })
         BrowserWindow.fromWebContents(event.sender).webContents.send("savelist", JSON.stringify(savelist))
@@ -62,7 +62,7 @@ app.whenReady().then(() => {
     ipcMain.on("loadSave",(e,filename, runApp)=>{
         console.log(runApp)
         console.log(filename)
-        fs.copyFileSync(`saves/${filename}.sav`, process.env.HOME+"/Library/Application Support/FasterThanLight/continue.sav")
+        fs.copyFileSync(`savefiles/${filename}.sav`, process.env.HOME+"/Library/Application Support/FasterThanLight/continue.sav")
         BrowserWindow.fromWebContents(e.sender).webContents.send("loadedIn")
         if(runApp){
             proc.exec("open "+FTLlocation)

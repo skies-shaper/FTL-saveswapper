@@ -1,3 +1,5 @@
+saves/
+savefiles/
 .DS_Store
 .env
 .gclient_done
