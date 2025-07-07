@@ -4,8 +4,11 @@ const proc = require('node:child_process');
 const process = require("node:process")
 const fs = require("node:fs")
 const { dialog } = require('electron')
-
-let FTLlocation = ""
+let app = {
+    os : "OSX", 
+    savLocation : process.env.HOME+"/Library/Application Support/FasterThanLight/continue.sav",
+    FTLlocation: ""
+}
 
 const createWindow = () => {
     const win = new BrowserWindow({
@@ -23,12 +26,12 @@ const createWindow = () => {
 
 app.whenReady().then(() => {
     createWindow()
-    FTLlocation = ""+fs.readFileSync("appData.file")
+    app.FTLlocation = ""+fs.readFileSync("appData.file")
 
     ipcMain.on("fetchNew",(e, fileName)=>{
         console.log("fetch new file!")
         fs.writeFileSync(`savefiles/${fileName}.sav`,"helo")
-        fs.copyFileSync(process.env.HOME+"/Library/Application Support/FasterThanLight/continue.sav",`savefiles/${fileName}.sav`)
+        fs.copyFileSync(app.savLocation,`savefiles/${fileName}.sav`)
         
         let savelist = []
         fs.readdirSync("./savefiles").forEach((file) =>{
@@ -38,7 +41,7 @@ app.whenReady().then(() => {
     })
 
     ipcMain.on("reload", (e, fileName) =>{
-        fs.copyFileSync(process.env.HOME+"/Library/Application Support/FasterThanLight/continue.sav",`savefiles/${fileName}.sav`)
+        fs.copyFileSync(app.savLocation,`savefiles/${fileName}.sav`)
         BrowserWindow.fromWebContents(e.sender).webContents.send("message", `reloaded ${fileName}!`)
 
     })
@@ -62,20 +65,20 @@ app.whenReady().then(() => {
     ipcMain.on("loadSave",(e,filename, runApp)=>{
         console.log(runApp)
         console.log(filename)
-        fs.copyFileSync(`savefiles/${filename}.sav`, process.env.HOME+"/Library/Application Support/FasterThanLight/continue.sav")
+        fs.copyFileSync(`savefiles/${filename}.sav`, app.savLocation)
         BrowserWindow.fromWebContents(e.sender).webContents.send("loadedIn")
         if(runApp){
-            proc.exec("open "+FTLlocation)
+            proc.exec("open "+app.FTLlocation)
         }
     })
     ipcMain.on("getFTLloc", (event)=>{
-        FTLlocation = dialog.showOpenDialogSync({title : "Choose your FTL.app file", properties : ["openFile"]})[0]
-        fs.writeFileSync("appData.file",FTLlocation)
-        BrowserWindow.fromWebContents(event.sender).webContents.send("locdetected", FTLlocation)
+        app.FTLlocation = dialog.showOpenDialogSync({title : "Choose your FTL.app file", properties : ["openFile"]})[0]
+        fs.writeFileSync("appData.file",app.FTLlocation)
+        BrowserWindow.fromWebContents(event.sender).webContents.send("locdetected", app.FTLlocation)
     })
 
     ipcMain.on("reloadFTLloc", (event)=>{
-        BrowserWindow.fromWebContents(event.sender).webContents.send("locdetected", FTLlocation)
+        BrowserWindow.fromWebContents(event.sender).webContents.send("locdetected", app.FTLlocation)
     })
 
     app.on('activate', () => {
